@@ -3,23 +3,29 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'dev', url: 'https://github.com/vinay-hegde-17/VinayTestAutomation.git'
+                git branch: 'main', url: 'https://github.com/vinay-hegde-17/VinayTestAutomation.git'
             }
         }
-        stage('Install Dependencies') {
+        stage('Setup venv') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'python -m venv venv'
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
-        stage('Run API Tests') {
+        stage('Run Tests') {
             steps {
-                sh 'pytest tests/ --html=reports/test_report.html'
+                bat 'venv\\Scripts\\pytest tests/test_cases -v --html=reports/test_report.html --self-contained-html'
             }
         }
         stage('Archive Report') {
             steps {
                 archiveArtifacts artifacts: 'reports/*.html', fingerprint: true
             }
+        }
+    }
+    post {
+        always {
+            junit 'reports/*.xml'
         }
     }
 }
